@@ -1,0 +1,27 @@
+name: NSE Dividend Tracker
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC (09:00 Nairobi time)
+    - cron: '0 6 * * 1'
+  workflow_dispatch:  # allows manual test runs
+
+jobs:
+  fetch-dividends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 supabase python-dotenv
+
+      - name: Run dividend fetcher
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python dividend_fetcher.py
