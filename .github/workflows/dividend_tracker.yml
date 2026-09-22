@@ -18,7 +18,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests beautifulsoup4 supabase python-dotenv
+        run: pip install  -r requirements.txt
 
       - name: Run dividend fetcher
         env:
