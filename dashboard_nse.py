@@ -17,22 +17,40 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ------------------------------------------------------------------
-# Page config
+# Page config — must be the FIRST Streamlit command
 # ------------------------------------------------------------------
 st.set_page_config(
     page_title="NSE Dividend Tracker",
-    page_icon="🇰🇪",
+    page_icon="🇰🇪",                       # Emoji favicon (works everywhere)
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
+# ------------------------------------------------------------------
+# PWA-friendly tweaks: hide Streamlit chrome when embedded
+# ------------------------------------------------------------------
+# When loaded inside the PWA iframe (?embed=true), we hide the
+# Streamlit header/footer/menu so it looks like a native app.
+if st.query_params.get("embed") == "true":
+    st.markdown(
+        """
+        <style>
+            #MainMenu {visibility: hidden;}
+            header[data-testid="stHeader"] {visibility: hidden;}
+            footer {visibility: hidden;}
+            .stDeployButton {display: none;}
+            .block-container {padding-top: 1rem; padding-bottom: 1rem;}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 # ------------------------------------------------------------------
-# Supabase connection (Option A: direct client)
+# Supabase connection
 # ------------------------------------------------------------------
 @st.cache_resource
 def init_supabase():
-    # Prefer st.secrets (Streamlit Cloud); fall back to env (local dev)
     try:
         url = st.secrets.get("SUPABASE_URL")
         key = st.secrets.get("SUPABASE_KEY")
@@ -53,7 +71,7 @@ def init_supabase():
 supabase = init_supabase()
 
 # ------------------------------------------------------------------
-# Static company metadata (for display, no scraping needed)
+# Static company metadata
 # ------------------------------------------------------------------
 COMPANIES = {
     "SCOM": {"name": "Safaricom",          "sector": "Telecom"},
@@ -66,7 +84,6 @@ COMPANIES = {
     "KAPC": {"name": "Kapchorua Tea",      "sector": "Agriculture"},
 }
 
-# Withholding tax rate on NSE dividends (Kenyan resident)
 WITHHOLDING_TAX_PCT = 5.0
 
 
@@ -102,7 +119,6 @@ def fetch_income():
 
 
 def trailing_12m_dividend(ticker, dividends_df):
-    """Sum of all dividends with ex_date in the last 365 days."""
     if dividends_df.empty or "ex_date" not in dividends_df.columns:
         return 0.0
     df = dividends_df[dividends_df["ticker"] == ticker].copy()
@@ -115,7 +131,7 @@ def trailing_12m_dividend(ticker, dividends_df):
 
 
 # ------------------------------------------------------------------
-# Sidebar — add holdings and record income
+# Sidebar
 # ------------------------------------------------------------------
 with st.sidebar:
     st.header("📥 Add a Holding")
@@ -195,7 +211,7 @@ tab_holdings, tab_calendar, tab_income = st.tabs(
 
 
 # =========================================================
-# TAB 1 — Holdings & Yield on Cost
+# TAB 1 — Holdings
 # =========================================================
 with tab_holdings:
     if holdings_df.empty:
@@ -206,7 +222,6 @@ with tab_holdings:
             lambda t: COMPANIES.get(t, {}).get("name", t)
         )
 
-        # Compute trailing 12-month dividend and derived metrics
         df["t12m_div_per_share"] = df["ticker"].apply(
             lambda t: trailing_12m_dividend(t, dividends_df)
         )
@@ -229,7 +244,6 @@ with tab_holdings:
 
         st.divider()
 
-        # Formatted display table
         display = df[[
             "ticker", "company_name", "shares_owned",
             "average_buy_price", "t12m_div_per_share",
@@ -247,7 +261,6 @@ with tab_holdings:
 
         st.dataframe(display, use_container_width=True, hide_index=True)
 
-        # Bar chart of annual income by ticker
         st.markdown("### Annual Income by Company")
         chart_df = df[["ticker", "annual_income"]].sort_values("annual_income", ascending=True)
         fig = go.Figure(go.Bar(
@@ -327,7 +340,6 @@ with tab_income:
 
         st.divider()
 
-        # Cumulative income line chart
         inc["cumulative"] = inc["amount_received"].cumsum()
         fig = go.Figure()
         fig.add_trace(go.Scatter(
@@ -346,7 +358,6 @@ with tab_income:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Raw table
         display_inc = inc[["ticker", "payment_date", "amount_received", "withholding_tax"]].copy()
         display_inc.columns = ["Ticker", "Payment Date", "Amount (KES)", "Tax (KES)"]
         display_inc["Payment Date"] = display_inc["Payment Date"].dt.strftime("%Y-%m-%d")

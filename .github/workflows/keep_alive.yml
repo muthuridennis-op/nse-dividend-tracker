@@ -1,0 +1,23 @@
+name: Keep Streamlit App Awake
+
+on:
+  schedule:
+    # Every 6 hours at :15 past the hour (avoids Streamlit's busy top-of-hour)
+    - cron: "15 */6 * * *"
+  workflow_dispatch:   # lets you test manually from the Actions tab
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit app
+        run: |
+          echo "Pinging: ${{ secrets.STREAMLIT_APP_URL }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.STREAMLIT_APP_URL }}")
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "✅ App responded. Keep-alive successful."
+          else
+            echo "⚠️ Unexpected status: $STATUS"
+            exit 1
+          fi
