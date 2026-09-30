@@ -16,9 +16,6 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  // Never cache the Streamlit app itself — always fetch live
   if (e.request.url.includes("streamlit.app")) return;
-  e.respondWith(
-    caches.match(e.request).then((r) => r || fetch(e.request))
-  );
+  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
 });

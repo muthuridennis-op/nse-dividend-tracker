@@ -13,28 +13,17 @@
   <title>NSE Dividend Tracker</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #0e1117;
-      overflow: hidden;
+      margin: 0; padding: 0; height: 100%;
+      background: #0e1117; overflow: hidden;
     }
     iframe {
-      border: 0;
-      width: 100vw;
-      height: 100vh;
-      display: block;
+      border: 0; width: 100vw; height: 100vh; display: block;
     }
     #loader {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0e1117;
-      color: #2ca02c;
-      font-family: -apple-system, sans-serif;
-      font-size: 18px;
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: #0e1117; color: #2ca02c;
+      font-family: -apple-system, sans-serif; font-size: 18px;
       z-index: 10;
     }
   </style>
@@ -46,14 +35,11 @@
   <script src="config.js"></script>
   <script>
     const frame = document.getElementById("app");
-    // Append embed param so Streamlit hides its own chrome
     const sep = APP_URL.includes("?") ? "&" : "?";
     frame.src = APP_URL + sep + "embed=true";
     frame.onload = () => {
       document.getElementById("loader").style.display = "none";
     };
-
-    // Register service worker for offline shell
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js").catch(() => {});
     }
