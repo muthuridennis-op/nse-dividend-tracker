@@ -33,9 +33,9 @@ if st.query_params.get("embed") == "true":
 
 # Define pages
 pages = [
-    st.Page("pages/1_📊_Holdings.py", title="Holdings", icon="📊", default=True),
-    st.Page("pages/2_📅_Calendar.py", title="Calendar", icon="📅"),
-    st.Page("pages/3_💰_Income.py", title="Income", icon="💰"),
+    st.Page("pages/1_Holdings.py", title="Holdings", icon="📊", default=True),
+    st.Page("pages/2_Calendar.py", title="Calendar", icon="📅"),
+    st.Page("pages/3_Income.py", title="Income", icon="💰"),
 ]
 
 # Register navigation
